@@ -1,0 +1,7 @@
+*.pth
+
+data/
+log/
+.idea/
+__pycache__/
+AlphaPose/
