@@ -30,7 +30,7 @@ class JumpState(object):
     def get_point(self, pose_dic: dict, angle_map: dict, idx: int):
         key_pose = self.count_thres[self.action_name]["key_point"]
         self.key_point.append(pose_dic[key_pose][1])
-        check_map = self.count_thres["check"]
+        check_map = self.count_thres[self.action_name]["check"]
         for ch in check_map.keys():
             if ch in self.check_angle:
                 self.check_angle[ch].append(angle_map[ch][0])
@@ -73,7 +73,7 @@ class JumpState(object):
                 pre = self.first_peak_index[i]
 
     def check(self, index, thres=20):
-        check = self.count_thres["check"]
+        check = self.count_thres[self.action_name]["check"]
         for angle_name in self.check_angle:
             if abs(self.check_angle[angle_name][index] - check[angle_name]) < thres:
                 return False
