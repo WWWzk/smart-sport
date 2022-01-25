@@ -41,19 +41,6 @@ class MatchSequence(object):
     def credit(self, frame: Frame):
         self._match_frame(frame)
 
-    def get_score(self):
-        # 先计算分数
-        container = self.matched
-        scores = [t[1] for t in container.matched_frame]
-        frame_num = len(self.contains_frame)
-        score = sum(scores) / frame_num
-        self.score_list.append(score)
-        # 统计是否完成一次完整动作
-        self.count += all(self.contains_frame)
-        self.contains_frame = [False for i in range(frame_num)]
-        # 清空当前分数
-        container.matched_frame = container.matched_frame[-1:]
-
     def _get_score(self, is_last=False):
         # 先计算分数
         container = self.matched
@@ -157,7 +144,7 @@ class MatchSequence(object):
         sc = max(self.score_list) if self.score_list else 0
 
         self.clear()
-        return [sc, self.count]
+        return sc
 
     def clear(self):
         self.state_machines.reinitialize()

@@ -43,9 +43,7 @@ class ActionRecognizer(object):
         res = []
         for seq in self.sequences:
             res.append(seq.final_res())
-        print(res)
-        index = 0 if self.standard_action.rec_type == 0 else 1
-        return max(i[index] for i in res)
+        return max(res)
 
     def clear(self):
         pass
