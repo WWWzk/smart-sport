@@ -13,11 +13,11 @@ class BentLeg(object):
 
         angle_l = angle_dic['l_leg']
         angle_r = angle_dic['r_leg']
-        if angle_l[1] >= 0.008 and angle_l[0] <= 160:
+        if angle_l[1] >= 0.008 and angle_l[0] <= 150:
             self.angle_left_leg.append(angle_l[0])
             self.index_l.append(idx)
 
-        if angle_r[1] >= 0.008 and angle_r[0] <= 160:
+        if angle_r[1] >= 0.007 and angle_r[0] <= 145:
             self.angle_right_leg.append(angle_r[0])
             self.index_r.append(idx)
 
@@ -52,8 +52,8 @@ class BentLeg(object):
             if i == len(angles):
                 break
             cur_state = -1
-            if max_angle >= angles[i] >= max_angle-threshold:
-                if angles[i] - angles[i-1] < 0:
+            if max_angle >= angles[i] >= max_angle - threshold:
+                if angles[i] - angles[i - 1] < 0:
                     cur_state = 0  # 角度变小的趋势
                 else:
                     cur_state = 1  # 角度变大趋势
@@ -71,33 +71,30 @@ class BentLeg(object):
         return count
 
     def get_count(self):
-        print('左长度')
-        print(len(self.angle_left_leg))
-        print('右长度')
-        print(len(self.angle_right_leg))
+        # print('左长度')
+        # print(len(self.angle_left_leg))
+        # print('右长度')
+        # print(len(self.angle_right_leg))
         l_n = self.lr_count()
         r_n = self.lr_count(mod='right')
 
-        if l_n >= r_n:
-            res = l_n
-            res_list = self.l_res
-        elif l_n < r_n:
-            res = r_n
-            res_list = self.r_res
-        else:
-            return l_n
+        l_n = l_n - self.get_mid(self.l_res)
+        r_n = r_n - self.get_mid(self.r_res)
+
+        return max([l_n, r_n])
+
+    def get_mid(self, res_list, threshold=50):
+
         i = 0
         dis_list = []
         while i + 1 < len(res_list):
-            dis_list.append(res_list[i+1][1] - res_list[i][1])
+            dis_list.append(res_list[i + 1][1] - res_list[i][1])
             i += 1
 
-        return res - self.get_mid(dis_list)
-
-    def get_mid(self, dis_list, threshold=30):
         length = len(dis_list)
         if length == 0:
             return 0
+
         tmp_list = sorted(dis_list)
         mid_num = tmp_list[int(length / 2)]
         i = 0

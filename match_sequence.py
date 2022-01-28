@@ -17,6 +17,7 @@ class MatchSequence(object):
     def __init__(self, seq_id, cfg, standard_action: StandardAction):
         self.seq_id = seq_id
         self.matched = AttributeContainer(cfg)
+        self.analyzer = ReasonAnalyser()
         self.standard_action = standard_action
 
         states = standard_action.states
@@ -35,8 +36,6 @@ class MatchSequence(object):
         else:
             self.contains_frame = [False for i in range(repeat[0][1] + 1)]
         self.score_list = []
-
-        self.matchId_list = []
 
     def credit(self, frame: Frame):
         self._match_frame(frame)
@@ -128,13 +127,18 @@ class MatchSequence(object):
             # 更新分数
             if score > self.matched.matched_frame[-1][1]:
                 self.matched.update(frame, score, state_id)
+                self.analyzer.update(frame, score, state_id)
+
         elif state_id > self.cur_id:
             # 继续往下匹配
             self.matched.add(frame, score, state_id)
+            self.analyzer.add(frame, score, state_id)
         else:
             # 返回重新匹配
             self._get_score()
             self.matched.add(frame, score, state_id)
+            self.analyzer.add(frame, score, state_id, new_index=True)
+
         self.contains_frame[state_id] = True
         self.cur_id = state_id
 
@@ -142,7 +146,9 @@ class MatchSequence(object):
         if self.matched.matched_frame:
             self._get_score(is_last=True)
         sc = max(self.score_list) if self.score_list else 0
-
+        print('-------以下是原因-------')
+        self.analyzer.print_reason()
+        print('-------以上是原因-------')
         self.clear()
         return sc
 
@@ -151,3 +157,49 @@ class MatchSequence(object):
         self.matched.clear()
         self.score_list.clear()
         self.contains_frame.clear()
+
+
+class ReasonAnalyser(object):
+
+    def __init__(self):
+        self.matched_list = [[]]
+        self.scores = []
+        self.index = 0
+        self.score = 0
+        self.out_index = 0
+
+    def add(self, frame: Frame, score, matched_id, new_index=False):
+        if new_index:
+            self.matched_list.append([])
+            self.index += 1
+        self.matched_list[self.index].append((frame.order, score, matched_id))
+
+    def update(self, frame: Frame, score, matched_id):
+        self.matched_list[self.index][-1] = (frame.order, score, matched_id)
+
+    def get_score(self):
+        i = 0
+        while i <= self.index:
+            matched = self.matched_list[i]
+            sc = [s[1] for s in matched]
+            if len(sc) == 0:
+                i += 1
+                continue
+            tmp_score = sum(sc) / len(sc)
+            self.scores.append(tmp_score)
+            if tmp_score > self.score:
+                self.score = tmp_score
+                self.out_index = i
+            i += 1
+
+    def print_reason(self):
+        self.get_score()
+        print(self.matched_list[self.out_index])
+
+    def get_reason(self):
+        pass
+
+    def clear(self):
+        self.matched_list = [[]]
+        self.index = 0
+        self.out_index = 0

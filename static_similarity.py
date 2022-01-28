@@ -28,5 +28,8 @@ def angle_similarity_almost(frame_x: Frame, frame_standard: Frame, eta=1):
         s = score_diffs[key]
         threshold = score_thresholds[key][1] if s > 0 else score_thresholds[key][0]
         s = abs(s)
-        score += (1 - min(s, threshold) / threshold) * weights[key]
+        if angles[key][1] > 0.009:
+            score += (1 - min(s, threshold) / threshold) * weights[key]
+        else:
+            score += 0.8*weights[key]
     return matched, score, vital_diffs
